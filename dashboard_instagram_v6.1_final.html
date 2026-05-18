@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Analytics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a26;
+    --card: #16161f;
+    --border: rgba(255,255,255,0.07);
+    --accent: #c96fff;
+    --accent2: #ff6fd8;
+    --accent3: #6fdfff;
+    --accent4: #ffd86f;
+    --text: #f0eeff;
+    --muted: #7e7ea0;
+    --pos: #5fffa8;
+    --neg: #ff6b6b;
+    --neu: #ffd86f;
+    --gradient: linear-gradient(135deg, #c96fff 0%, #ff6fd8 50%, #6fdfff 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    padding: 48px 40px 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(201,111,255,0.06) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo-area h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(28px, 4vw, 46px);
+    font-weight: 800;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .logo-area p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .header-badge {
+    background: rgba(201,111,255,0.12);
+    border: 1px solid rgba(201,111,255,0.3);
+    border-radius: 100px;
+    padding: 8px 18px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* ---- NAV TABS ---- */
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 20px 40px 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+    letter-spacing: 0.3px;
+  }
+
+  nav button.active {
+    color: var(--text);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--card);
+    margin-bottom: -1px;
+  }
+
+  nav button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 12px; right: 12px;
+    height: 2px;
+    background: var(--gradient);
+    border-radius: 2px;
+  }
+
+  nav button:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.04); }
+
+  /* ---- MAIN ---- */
+  main { padding: 36px 40px 60px; max-width: 1400px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---- SECTION TITLE ---- */
+  .section-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::before {
+    content: '';
+    width: 24px; height: 2px;
+    background: var(--gradient);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ---- GRID ---- */
+  .grid { display: grid; gap: 16px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g6 { grid-template-columns: repeat(6, 1fr); }
+  .g12 { grid-template-columns: repeat(1, 1fr) repeat(2, 1fr); }
+
+  /* ---- CARD ---- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover { border-color: rgba(201,111,255,0.25); transform: translateY(-1px); }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top left, rgba(201,111,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ---- METRIC CARD ---- */
+  .metric-card .label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .metric-card .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(22px, 3vw, 36px);
+    font-weight: 800;
+    line-height: 1;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .metric-card .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .metric-card .icon {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 28px;
+    opacity: 0.15;
+  }
+
+  /* ---- CHART CARD ---- */
+  .chart-card .card-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chart-card .card-title span { font-size: 16px; }
+  .chart-container { position: relative; }
+  .chart-container canvas { width: 100% !important; }
+
+  /* ---- SENTIMENT BADGES ---- */
+  .sent-grid {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .sent-badge {
+    flex: 1;
+    min-width: 140px;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sent-badge.pos { background: rgba(95,255,168,0.08); border: 1px solid rgba(95,255,168,0.2); }
+  .sent-badge.neg { background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.2); }
+  .sent-badge.neu { background: rgba(255,216,111,0.08); border: 1px solid rgba(255,216,111,0.2); }
+
+  .sent-badge .sval {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .sent-badge.pos .sval { color: var(--pos); }
+  .sent-badge.neg .sval { color: var(--neg); }
+  .sent-badge.neu .sval { color: var(--neu); }
+
+  .sent-badge .slabel { font-size: 12px; color: var(--muted); margin-top: 6px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+  .sent-badge .spct { font-family: 'Inter', sans-serif; font-size: 13px; margin-top: 4px; font-weight: 500; }
+  .sent-badge.pos .spct { color: var(--pos); }
+  .sent-badge.neg .spct { color: var(--neg); }
+  .sent-badge.neu .spct { color: var(--neu); }
+
+  /* ---- TOP WORDS ---- */
+  .word-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .word-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .word-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 800;
+    width: 22px;
+    color: var(--muted);
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .word-text {
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 90px;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+
+  .word-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .word-bar { height: 100%; border-radius: 100px; transition: width 0.8s ease; }
+  .word-bar.pos { background: linear-gradient(90deg, #5fffa8, #6fdfff); }
+  .word-bar.neg { background: linear-gradient(90deg, #ff6b6b, #ff6fd8); }
+
+  .word-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* ---- EMOJI GRID ---- */
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+
+  .emoji-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .emoji-item:hover { border-color: rgba(201,111,255,0.4); background: rgba(201,111,255,0.08); transform: scale(1.05); }
+  .emoji-item .em { font-size: 26px; line-height: 1; }
+  .emoji-item .em-count { font-size: 12px; color: var(--accent); font-weight: 700; margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+
+  /* ---- TOP 10 TABLE ---- */
+  .top10-table { width: 100%; border-collapse: collapse; }
+
+  .top10-table thead tr { border-bottom: 1px solid var(--border); }
+  .top10-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 0 12px 12px; text-align: left; }
+  .top10-table th:not(:first-child) { text-align: right; }
+
+  .top10-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.15s;
+  }
+
+  .top10-table tbody tr:hover { background: rgba(201,111,255,0.05); }
+
+  .top10-table td {
+    padding: 12px;
+    font-size: 13px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .top10-table td:not(:first-child) { text-align: right; font-family: 'Inter', sans-serif; }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  .rank-badge.gold { background: rgba(255,216,111,0.15); color: var(--accent4); border: 1px solid rgba(255,216,111,0.3); }
+  .rank-badge.silver { background: rgba(180,180,200,0.12); color: #b4b4c8; border: 1px solid rgba(180,180,200,0.2); }
+  .rank-badge.bronze { background: rgba(255,150,80,0.12); color: #ff9650; border: 1px solid rgba(255,150,80,0.2); }
+  .rank-badge.default { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+
+  .type-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .type-pill.Video { background: rgba(111,223,255,0.12); color: var(--accent3); border: 1px solid rgba(111,223,255,0.3); }
+  .type-pill.Image { background: rgba(201,111,255,0.12); color: var(--accent); border: 1px solid rgba(201,111,255,0.3); }
+  .type-pill.Sidecar { background: rgba(255,111,216,0.12); color: var(--accent2); border: 1px solid rgba(255,111,216,0.3); }
+
+  .engagement-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent4); }
+
+  /* ---- HIGHLIGHTS ---- */
+  .highlight-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .highlight-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--gradient);
+    border-radius: 3px 0 0 3px;
+  }
+
+  .highlight-card .h-icon { font-size: 28px; margin-bottom: 12px; }
+  .highlight-card .h-title { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .highlight-card .h-val { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin-bottom: 4px; }
+  .highlight-card .h-desc { font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.5; }
+
+  /* ---- INSIGHTS ---- */
+  .insight-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+
+  .insight-item:hover { border-color: rgba(201,111,255,0.3); }
+  .insight-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+
+  .insight-content .i-title { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .insight-content .i-text { font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.6; }
+
+  .mb { margin-bottom: 32px; }
+  .mt { margin-top: 32px; }
+
+  /* ---- Scrollbar ---- */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(201,111,255,0.3); border-radius: 100px; }
+
+  @media (max-width: 900px) {
+    header, nav, main { padding-left: 20px; padding-right: 20px; }
+    .g4 { grid-template-columns: repeat(2, 1fr); }
+    .g3 { grid-template-columns: 1fr; }
+    .g2 { grid-template-columns: 1fr; }
+    .g6 { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (max-width: 600px) {
+    .g4 { grid-template-columns: 1fr 1fr; }
+    .g6 { grid-template-columns: repeat(2, 1fr); }
+    .emoji-grid { grid-template-columns: repeat(5, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <h1>Instagram Analytics</h1>
+    <p>Análise completa de performance · Dados até Mai 2026</p>
+  </div>
+  <div class="header-badge">📊 Dashboard Interativo</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('geral')">📈 Métricas Gerais</button>
+  <button onclick="showTab('videos')">🎬 Vídeos & Views</button>
+  <button onclick="showTab('conteudo')">📁 Conteúdo</button>
+  <button onclick="showTab('top10')">🏆 Top 10 Posts</button>
+  <button onclick="showTab('sentimentos')">💬 Sentimentos</button>
+  <button onclick="showTab('destaques')">⚡ Destaques</button>
+  <button onclick="showTab('insights')">🔍 Insights</button>
+</nav>
+
+<main>
+
+<div id="tab-geral" class="tab-panel active">
+  <p class="section-title">Métricas Gerais de Performance</p>
+  <div class="grid g4 mb">
+    <div class="card metric-card">
+      <div class="icon">📝</div>
+      <div class="label">Total de Postagens</div>
+      <div class="value">18</div>
+      <div class="sub">Posts analisados</div>
+    </div>
+    <div class="card metric-card">
+      <div class="icon">💬</div>
+      <div class="label">Total de Comentários</div>
+      <div class="value">11.721</div>
+      <div class="sub">Em todos os posts</div>
+    </div>
+    <div class="card metric-card">
+      <div class="icon">❤️</div>
+      <div class="label">Total de Curtidas</div>
+      <div class="value">535.679</div>
+      <div class="sub">Acumulado geral</div>
+    </div>
+    <div class="card metric-card">
+      <div class="icon">👁️</div>
+      <div class="label">Total de Visualizações</div>
+      <div class="value">693.788</div>
+      <div class="sub">Vídeos publicados</div>
+    </div>
+  </div>
+  <div class="grid g4 mb">
+    <div class="card metric-card">
+      <div class="icon">🗣️</div>
+      <div class="label">Média de Comentários</div>
+      <div class="value">651,17</div>
+      <div class="sub">Por post (excluindo zeros)</div>
+    </div>
+  </div>
+
+  <p class="section-title">Postagens por Mês</p>
+  <div class="card chart-card">
+    <div class="card-title"><span>📅</span> Distribuição Temporal de Publicações</div>
+    <div class="chart-container" style="height:280px">
+      <canvas id="monthlyChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="tab-videos" class="tab-panel">
+  <p class="section-title">Métricas de Vídeo</p>
+  <div class="grid g4 mb">
+    <div class="card metric-card">
+      <div class="icon">👁️</div>
+      <div class="label">Total de Views</div>
+      <div class="value">693.788</div>
+      <div class="sub">Visualizações acumuladas</div>
+    </div>
+    <div class="card metric-card">
+      <div class="icon">📈</div>
+      <div class="label">Média de Views</div>
+      <div class="value">99.112,57</div>
+      <div class="sub">Por vídeo (excl. zeros)</div>
+    </div>
+    <div class="card metric-card">
+      <div class="icon">▶️</div>
+      <div class="label">Total de Plays</div>
+      <div class="value">3.976.490</div>
+      <div class="sub">Reproduções totais</div>
+    </div>
+    <div class="card metric-card">
+      <div class="icon">🔁</div>
+      <div class="label">Média de Plays</div>
+      <div class="value">568.070,00</div>
+      <div class="sub">Por vídeo (excl. zeros)</div>
+    </div>
+  </div>
+
+  <p class="section-title">Views dos Vídeos Publicados</p>
+  <div class="card chart-card mb">
+    <div class="card-title"><span>📊</span> Views dos Vídeos Individuais</div>
+    <div class="chart-container" style="height:280px">
+      <canvas id="videoViewsChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="tab-conteudo" class="tab-panel">
+  <p class="section-title">Distribuição por Tipo de Conteúdo</p>
+  <div class="grid g2 mb">
+    <div class="card chart-card">
+      <div class="card-title"><span>🍩</span> Tipos de Post</div>
+      <div class="chart-container" style="height:280px">
+        <canvas id="typeDistChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;"><span>📋</span> Resumo por Tipo</div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="color:var(--accent3);font-weight:600;font-size:14px;">🎬 Vídeo</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--accent3);">7 posts · 38.9%</span>
+          </div>
+          <div style="height:6px;background:var(--bg3);border-radius:100px;overflow:hidden;">
+            <div style="width:38.9%;height:100%;background:var(--accent3);border-radius:100px;"></div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">Maior alcance via views e plays</div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="color:var(--accent);font-weight:600;font-size:14px;">🖼️ Imagem</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--accent);">6 posts · 33.3%</span>
+          </div>
+          <div style="height:6px;background:var(--bg3);border-radius:100px;overflow:hidden;">
+            <div style="width:33.3%;height:100%;background:var(--accent);border-radius:100px;"></div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">Alto engajamento em curtidas</div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="color:var(--accent2);font-weight:600;font-size:14px;">📸 Sidecar</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--accent2);">5 posts · 27.8%</span>
+          </div>
+          <div style="height:6px;background:var(--bg3);border-radius:100px;overflow:hidden;">
+            <div style="width:27.8%;height:100%;background:var(--accent2);border-radius:100px;"></div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">Carrosséis com múltiplas imagens</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-top10" class="tab-panel">
+  <p class="section-title">Top 10 Posts por Engajamento Total</p>
+  <div class="card" style="padding:0;overflow:auto;">
+    <table class="top10-table">
+      <thead>
+        <tr>
+          <th style="padding-left:24px;">Post</th>
+          <th>Tipo</th>
+          <th>Curtidas</th>
+          <th>Comentários</th>
+          <th style="padding-right:24px;">Engajamento</th>
+        </tr>
+      </thead>
+      <tbody id="top10-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="tab-sentimentos" class="tab-panel">
+  <p class="section-title">Análise de Sentimentos dos Comentários</p>
+  <div class="sent-grid mb">
+    <div class="sent-badge pos">
+      <div class="sval">6.492</div>
+      <div class="slabel">Positivo</div>
+      <div class="spct">73.7%</div>
+    </div>
+    <div class="sent-badge neu">
+      <div class="sval">2.027</div>
+      <div class="slabel">Neutro</div>
+      <div class="spct">23.0%</div>
+    </div>
+    <div class="sent-badge neg">
+      <div class="sval">295</div>
+      <div class="slabel">Negativo</div>
+      <div class="spct">3.3%</div>
+    </div>
+  </div>
+
+  <div class="grid g2 mb">
+    <div class="card chart-card">
+      <div class="card-title"><span>🥧</span> Distribuição de Sentimentos</div>
+      <div class="chart-container" style="height:260px">
+        <canvas id="sentimentChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;"><span>😄</span> Top 10 Emojis</div>
+      <div class="emoji-grid">
+        <div class="emoji-item"><div class="em">😍</div><div class="em-count">5.715</div></div>
+        <div class="emoji-item"><div class="em">🔥</div><div class="em-count">3.319</div></div>
+        <div class="emoji-item"><div class="em">❤</div><div class="em-count">2.603</div></div>
+        <div class="emoji-item"><div class="em">👏</div><div class="em-count">450</div></div>
+        <div class="emoji-item"><div class="em">😮</div><div class="em-count">210</div></div>
+        <div class="emoji-item"><div class="em">🤤</div><div class="em-count">207</div></div>
+        <div class="emoji-item"><div class="em">✨</div><div class="em-count">150</div></div>
+        <div class="emoji-item"><div class="em">💨</div><div class="em-count">136</div></div>
+        <div class="emoji-item"><div class="em">🥵</div><div class="em-count">111</div></div>
+        <div class="emoji-item"><div class="em">🙌</div><div class="em-count">88</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-title" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;color:var(--pos)"><span>✅</span> Top 10 Palavras Positivas</div>
+      <div class="word-list" id="pos-words"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;color:var(--neg)"><span>❌</span> Top 10 Palavras Negativas</div>
+      <div class="word-list" id="neg-words"></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-destaques" class="tab-panel">
+  <p class="section-title">Destaques de Performance</p>
+  <div class="grid g3 mb">
+    <div class="highlight-card">
+      <div class="h-icon">🏆</div>
+      <div class="h-title">Post Mais Curtido</div>
+      <div class="h-val">134.198</div>
+      <div class="h-desc">Foto "mto gostosa quem concorda respira" — publicada em Fev/2022, ainda lidera em curtidas absolutas.</div>
+    </div>
+    <div class="highlight-card">
+      <div class="h-icon">💬</div>
+      <div class="h-title">Post Mais Comentado</div>
+      <div class="h-val">2.638</div>
+      <div class="h-desc">Vídeo "Lembranças" (Jun/2025) com maior interação em comentários, combinando alcance emocional.</div>
+    </div>
+    <div class="highlight-card">
+      <div class="h-icon">▶️</div>
+      <div class="h-title">Vídeo com Mais Plays</div>
+      <div class="h-val">2.020.918</div>
+      <div class="h-desc">Vídeo "Lembranças" (Jun/2025) domina em reproduções, superando 2 milhões de plays.</div>
+    </div>
+    <div class="highlight-card">
+      <div class="h-icon">😍</div>
+      <div class="h-title">Emoji Mais Usado</div>
+      <div class="h-val">😍 5.715×</div>
+      <div class="h-desc">O emoji de amor/admiração lidera com ampla margem, indicando forte apelo estético e emocional.</div>
+    </div>
+    <div class="highlight-card">
+      <div class="h-icon">💚</div>
+      <div class="h-title">Sentimento Dominante</div>
+      <div class="h-val">73.7%</div>
+      <div class="h-desc">Dos 8.814 comentários analisados, 6.492 são positivos — índice de aprovação muito acima da média.</div>
+    </div>
+    <div class="highlight-card">
+      <div class="h-icon">📅</div>
+      <div class="h-title">Mês Mais Ativo</div>
+      <div class="h-val">Fev/2026</div>
+      <div class="h-desc">Com 3 publicações, fevereiro de 2026 foi o mês de maior frequência de postagens no período.</div>
+    </div>
+  </div>
+  <p class="section-title">Taxa de Engajamento por Tipo</p>
+  <div class="card chart-card">
+    <div class="card-title"><span>📊</span> % de Curtidas vs % de Comentários por Tipo de Conteúdo</div>
+    <div class="chart-container" style="height:280px">
+      <canvas id="engagementByTypeChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="tab-insights" class="tab-panel">
+  <p class="section-title">Análise Estratégica & Recomendações</p>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <div class="insight-item">
+      <div class="insight-icon">🚀</div>
+      <div class="insight-content">
+        <div class="i-title">Vídeos geram alcance massivo — priorize esse formato</div>
+        <div class="i-text">Os vídeos acumularam 3,97M de plays com média de 568K reproduções por post. O vídeo "Lembranças" atingiu +2M de plays. Aumentar a frequência de vídeos pode ampliar significativamente o alcance orgânico.</div>
+      </div>
+    </div>
+
+    <div class="insight-item">
+      <div class="insight-icon">❤️</div>
+      <div class="insight-content">
+        <div class="i-title">Posts mais antigos ainda lideram em curtidas absolutas</div>
+        <div class="i-text">Posts de 2022 (134K, 103K e 80K curtidas) superam os mais recentes, indicando uma base de fãs engajada consolidada. Conteúdo nostálgico ou que lembra esse período pode reviver engajamento.</div>
+      </div>
+    </div>
+
+    <div class="insight-item">
+      <div class="insight-icon">😍</div>
+      <div class="insight-content">
+        <div class="i-title">Audiência extremamente positiva — potencial de comunidade forte</div>
+        <div class="i-text">73.7% dos comentários são positivos. As palavras mais frequentes ("amo", "linda", "maravilhosa", "perfeita") revelam uma audiência altamente admiradora. Isso é terreno ideal para lançamentos, parcerias e monetização.</div>
+      </div>
+    </div>
+
+    <div class="insight-item">
+      <div class="insight-icon">📅</div>
+      <div class="insight-content">
+        <div class="i-title">Consistência de publicação é baixa — crie uma agenda editorial</div>
+        <div class="i-text">O intervalo entre posts é irregular, com meses sem publicações. Algoritmos do Instagram privilegiam contas ativas. Recomenda-se ao menos 3–4 posts semanais para manter relevância no feed e nos Reels.</div>
+      </div>
+    </div>
+
+    <div class="insight-item">
+      <div class="insight-icon">📸</div>
+      <div class="insight-content">
+        <div class="i-title">Sidecars têm bom desempenho — explore esse formato mais</div>
+        <div class="i-text">Carrosséis (Sidecar) representam 27.8% dos posts e historicamente têm taxas de salvamento e compartilhamento superiores. Usar carrosséis para storytelling, bastidores ou conteúdo educativo pode aumentar o tempo de tela.</div>
+      </div>
+    </div>
+
+    <div class="insight-item">
+      <div class="insight-icon">🔥</div>
+      <div class="insight-content">
+        <div class="i-title">Emojis de calor e admiração dominam — estética visual é diferencial</div>
+        <div class="i-text">🔥 e 😍 somam mais de 9K usos. O público reage fortemente ao apelo estético e de admiração. Investir em produção visual de alta qualidade (fotografia, direção de arte, edição de vídeo) tem retorno claro em engajamento.</div>
+      </div>
+    </div>
+
+    <div class="insight-item">
+      <div class="insight-icon">⚠️</div>
+      <div class="insight-content">
+        <div class="i-title">Negatividade é baixa mas merece monitoramento</div>
+        <div class="i-text">Apenas 3.3% dos comentários são negativos (295 de 8.814). As palavras negativas mais frequentes são expressões de surpresa/frustração ("pqp", "aff") — não críticas diretas. Monitorar esses comentários periodicamente protege a reputação.</div>
+      </div>
+    </div>
+
+    <div class="insight-item">
+      <div class="insight-icon">🎯</div>
+      <div class="insight-content">
+        <div class="i-title">Lançamentos musicais geram picos de engajamento</div>
+        <div class="i-text">Posts relacionados a músicas ("Nós Dois 222", "modo avião", "Lembranças") têm métricas de vídeo superiores. Alinhar publicações ao calendário de lançamentos e criar teasers sequenciais pode maximizar o alcance durante drops.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<script>
+// Tab switching
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Chart defaults
+Chart.defaults.color = '#7e7ea0';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+const accent = '#c96fff', accent2 = '#ff6fd8', accent3 = '#6fdfff', accent4 = '#ffd86f';
+const pos = '#5fffa8', neg = '#ff6b6b', neu = '#ffd86f';
+
+// Monthly chart
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Fev/22','Set/22','Nov/22','Ago/23','Nov/24','Jun/25','Ago/25','Set/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26'],
+    datasets: [{
+      label: 'Posts',
+      data: [1,1,1,1,1,1,2,2,2,1,3,1,1],
+      backgroundColor: ctx => {
+        const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
+        g.addColorStop(0, 'rgba(201,111,255,0.8)');
+        g.addColorStop(1, 'rgba(111,223,255,0.3)');
+        return g;
+      },
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { stepSize: 1 }, beginAtZero: true }
+    }
+  }
+});
+
+// Views by type
+new Chart(document.getElementById('viewsByTypeChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Vídeo', 'Imagem', 'Sidecar'],
+    datasets: [{
+      data: [693788, 0.001, 0.001],
+      backgroundColor: [accent3, accent, accent2],
+      borderColor: '#12121a',
+      borderWidth: 3,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } }
+    },
+    cutout: '65%'
+  }
+});
+
+// Individual video views
+new Chart(document.getElementById('videoViewsChart'), {
+  type: 'bar',
+  data: {
+    labels: ['feat?','Parte 3','Album','Decifrar','Nós Dois','Lembranças','Show'],
+    datasets: [{
+      label: 'Views',
+      data: [205116, 87189, 11876, 15587, 254938, 107073, 12009],
+      backgroundColor: [accent3, accent3, accent3, accent3, accent, accent2, accent3].map(c => c + 'bb'),
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true,
+           ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v } }
+    }
+  }
+});
+
+// Type distribution donut
+new Chart(document.getElementById('typeDistChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Vídeo (7)', 'Imagem (6)', 'Sidecar (5)'],
+    datasets: [{
+      data: [7, 6, 5],
+      backgroundColor: [accent3, accent, accent2],
+      borderColor: '#12121a',
+      borderWidth: 3,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } }
+    },
+    cutout: '65%'
+  }
+});
+
+// Sentiment chart
+new Chart(document.getElementById('sentimentChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Positivo (6.492)', 'Neutro (2.027)', 'Negativo (295)'],
+    datasets: [{
+      data: [6492, 2027, 295],
+      backgroundColor: [pos, neu, neg],
+      borderColor: '#12121a',
+      borderWidth: 3,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } }
+    },
+    cutout: '65%'
+  }
+});
+
+// % Curtidas vs % Comentários por tipo
+new Chart(document.getElementById('engagementByTypeChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Imagem', 'Sidecar', 'Vídeo'],
+    datasets: [
+      {
+        label: '% Curtidas',
+        data: [25.05, 51.85, 23.10],
+        backgroundColor: accent + 'bb',
+        borderRadius: 6,
+        borderSkipped: false,
+      },
+      {
+        label: '% Comentários',
+        data: [37.66, 22.63, 39.71],
+        backgroundColor: accent3 + 'bb',
+        borderRadius: 6,
+        borderSkipped: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}%` } }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true, max: 60,
+           ticks: { callback: v => v + '%' } }
+    }
+  }
+});
+
+// Top 10 table
+const top10 = [
+  { cap: 'mto gostosa quem concorda respira...', type: 'Image', likes: 134198, comments: 2121, eng: 136319 },
+  { cap: 'bandida de alta classe', type: 'Sidecar', likes: 103376, comments: 940, eng: 104316 },
+  { cap: 'brasileirinhas edition part. 1', type: 'Sidecar', likes: 80456, comments: 647, eng: 81103 },
+  { cap: 'Alguns encontros mudam tudo... (Lembranças)', type: 'Video', likes: 75740, comments: 2638, eng: 78378 },
+  { cap: "dressinha's life", type: 'Sidecar', likes: 53396, comments: 341, eng: 53737 },
+  { cap: 'meu dia hj. s2 queria falar varias coisas...', type: 'Sidecar', likes: 40512, comments: 347, eng: 40859 },
+  { cap: '"Nós Dois (222)" @mcph4m', type: 'Video', likes: 22645, comments: 348, eng: 22993 },
+  { cap: 'dps de modo avião e colar da versace, parte 3...', type: 'Video', likes: 14281, comments: 340, eng: 14621 },
+  { cap: 'qm vcs acham q vem de feat nessa? #viral', type: 'Video', likes: 11075, comments: 1037, eng: 12112 },
+  { cap: '222', type: 'Image', likes: 0, comments: 1262, eng: 1262 },
+];
+
+const rankClass = i => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'default';
+const fmt = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const fmtInt = n => Math.round(n).toLocaleString('pt-BR');
+
+const tbody = document.getElementById('top10-body');
+top10.forEach((r, i) => {
+  tbody.innerHTML += `<tr>
+    <td style="padding-left:24px;max-width:320px;">
+      <span class="rank-badge ${rankClass(i)}">${i+1}</span>
+      <span style="font-size:13px;color:var(--text);">${r.cap}</span>
+    </td>
+    <td><span class="type-pill ${r.type}">${r.type}</span></td>
+    <td>${fmtInt(r.likes)}</td>
+    <td>${fmtInt(r.comments)}</td>
+    <td style="padding-right:24px;"><span class="engagement-val">${fmtInt(r.eng)}</span></td>
+  </tr>`;
+});
+
+// Positive words
+const posWords = [
+  {w:'amo',c:333},{w:'linda',c:239},{w:'gostosa',c:208},{w:'sou',c:153},{w:'maravilhosa',c:147},
+  {w:'perfeita',c:140},{w:'mulher',c:129},{w:'demais',c:112},{w:'amor',c:111},{w:'gata',c:97}
+];
+const negWords = [
+  {w:'pqp',c:22},{w:'sem',c:12},{w:'mulher',c:9},{w:'mal',c:8},{w:'aff',c:7},
+  {w:'vida',c:6},{w:'nunca',c:5},{w:'afff',c:5},{w:'porra',c:5},{w:'amor',c:5}
+];
+
+function renderWords(data, elId, cls) {
+  const max = data[0].c;
+  const el = document.getElementById(elId);
+  data.forEach((d, i) => {
+    el.innerHTML += `<div class="word-item">
+      <span class="word-rank">#${i+1}</span>
+      <span class="word-text">${d.w}</span>
+      <div class="word-bar-wrap"><div class="word-bar ${cls}" style="width:${(d.c/max*100).toFixed(1)}%"></div></div>
+      <span class="word-count">${d.c}</span>
+    </div>`;
+  });
+}
+
+renderWords(posWords, 'pos-words', 'pos');
+renderWords(negWords, 'neg-words', 'neg');
+</script>
+</body>
+</html>
