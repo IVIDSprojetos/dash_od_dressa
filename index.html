@@ -13,16 +13,16 @@
     --bg3: #1a1a26;
     --card: #16161f;
     --border: rgba(255,255,255,0.07);
-    --accent: #c96fff;
-    --accent2: #ff6fd8;
-    --accent3: #6fdfff;
-    --accent4: #ffd86f;
+    --accent: #00c3ff;   /* Azul vibrante */
+    --accent2: #00e5ff;  /* Ciano / Teal */
+    --accent3: #00ff9d;  /* Verde neon */
+    --accent4: #5fffa8;  /* Verde claro */
     --text: #f0eeff;
     --muted: #7e7ea0;
-    --pos: #5fffa8;
-    --neg: #ff6b6b;
-    --neu: #ffd86f;
-    --gradient: linear-gradient(135deg, #c96fff 0%, #ff6fd8 50%, #6fdfff 100%);
+    --pos: #5fffa8;      /* Verde para positivos */
+    --neg: #ff6b6b;      /* Vermelho para negativos */
+    --neu: #ffd86f;      /* Amarelo para neutros */
+    --gradient: linear-gradient(135deg, #00c3ff 0%, #00e5ff 50%, #00ff9d 100%);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,7 +40,7 @@
   header {
     padding: 48px 40px 32px;
     border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, rgba(201,111,255,0.06) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(0,195,255,0.06) 0%, transparent 100%);
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -68,8 +68,8 @@
   }
 
   .header-badge {
-    background: rgba(201,111,255,0.12);
-    border: 1px solid rgba(201,111,255,0.3);
+    background: rgba(0,195,255,0.12);
+    border: 1px solid rgba(0,195,255,0.3);
     border-radius: 100px;
     padding: 8px 18px;
     font-size: 12px;
@@ -171,13 +171,13 @@
     transition: border-color 0.2s, transform 0.2s;
   }
 
-  .card:hover { border-color: rgba(201,111,255,0.25); transform: translateY(-1px); }
+  .card:hover { border-color: rgba(0,195,255,0.25); transform: translateY(-1px); }
 
   .card::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at top left, rgba(201,111,255,0.04) 0%, transparent 60%);
+    background: radial-gradient(ellipse at top left, rgba(0,195,255,0.04) 0%, transparent 60%);
     pointer-events: none;
   }
 
@@ -209,11 +209,28 @@
     font-weight: 300;
   }
 
+  /* ÍCONES DAS MÉTRICAS DESTAQUE */
   .metric-card .icon {
     position: absolute;
     top: 20px; right: 20px;
-    font-size: 28px;
-    opacity: 0.15;
+    font-size: 24px;
+    opacity: 1;
+    background: rgba(0,195,255,0.1);
+    border: 1px solid rgba(0,195,255,0.3);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    box-shadow: 0 4px 15px rgba(0,195,255,0.15);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .metric-card:hover .icon {
+    transform: scale(1.15) rotate(5deg);
+    border-color: rgba(0,195,255,0.6);
+    box-shadow: 0 6px 20px rgba(0,195,255,0.25);
   }
 
   /* ---- CHART CARD ---- */
@@ -307,8 +324,8 @@
   }
 
   .word-bar { height: 100%; border-radius: 100px; transition: width 0.8s ease; }
-  .word-bar.pos { background: linear-gradient(90deg, #5fffa8, #6fdfff); }
-  .word-bar.neg { background: linear-gradient(90deg, #ff6b6b, #ff6fd8); }
+  .word-bar.pos { background: linear-gradient(90deg, #5fffa8, #00ff9d); }
+  .word-bar.neg { background: linear-gradient(90deg, #ff6b6b, #00c3ff); }
 
   .word-count {
     font-family: 'JetBrains Mono', monospace;
@@ -334,7 +351,7 @@
     transition: all 0.2s;
   }
 
-  .emoji-item:hover { border-color: rgba(201,111,255,0.4); background: rgba(201,111,255,0.08); transform: scale(1.05); }
+  .emoji-item:hover { border-color: rgba(0,195,255,0.4); background: rgba(0,195,255,0.08); transform: scale(1.05); }
   .emoji-item .em { font-size: 26px; line-height: 1; }
   .emoji-item .em-count { font-size: 12px; color: var(--accent); font-weight: 700; margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
 
@@ -350,7 +367,7 @@
     transition: background 0.15s;
   }
 
-  .top10-table tbody tr:hover { background: rgba(201,111,255,0.05); }
+  .top10-table tbody tr:hover { background: rgba(0,195,255,0.05); }
 
   .top10-table td {
     padding: 12px;
@@ -375,7 +392,7 @@
     flex-shrink: 0;
   }
 
-  .rank-badge.gold { background: rgba(255,216,111,0.15); color: var(--accent4); border: 1px solid rgba(255,216,111,0.3); }
+  .rank-badge.gold { background: rgba(255,216,111,0.15); color: var(--neu); border: 1px solid rgba(255,216,111,0.3); }
   .rank-badge.silver { background: rgba(180,180,200,0.12); color: #b4b4c8; border: 1px solid rgba(180,180,200,0.2); }
   .rank-badge.bronze { background: rgba(255,150,80,0.12); color: #ff9650; border: 1px solid rgba(255,150,80,0.2); }
   .rank-badge.default { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
@@ -390,9 +407,9 @@
     text-transform: uppercase;
   }
 
-  .type-pill.Video { background: rgba(111,223,255,0.12); color: var(--accent3); border: 1px solid rgba(111,223,255,0.3); }
-  .type-pill.Image { background: rgba(201,111,255,0.12); color: var(--accent); border: 1px solid rgba(201,111,255,0.3); }
-  .type-pill.Sidecar { background: rgba(255,111,216,0.12); color: var(--accent2); border: 1px solid rgba(255,111,216,0.3); }
+  .type-pill.Video { background: rgba(0,255,157,0.12); color: var(--accent3); border: 1px solid rgba(0,255,157,0.3); }
+  .type-pill.Image { background: rgba(0,195,255,0.12); color: var(--accent); border: 1px solid rgba(0,195,255,0.3); }
+  .type-pill.Sidecar { background: rgba(0,229,255,0.12); color: var(--accent2); border: 1px solid rgba(0,229,255,0.3); }
 
   .engagement-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent4); }
 
@@ -416,7 +433,18 @@
     border-radius: 3px 0 0 3px;
   }
 
-  .highlight-card .h-icon { font-size: 28px; margin-bottom: 12px; }
+  /* ÍCONES DOS DESTAQUES */
+  .highlight-card .h-icon { 
+    font-size: 26px; 
+    margin-bottom: 16px; 
+    background: rgba(0,255,157,0.1);
+    border: 1px solid rgba(0,255,157,0.3);
+    width: 52px; height: 52px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 14px;
+    box-shadow: 0 4px 15px rgba(0,255,157,0.15);
+  }
+  
   .highlight-card .h-title { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
   .highlight-card .h-val { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin-bottom: 4px; }
   .highlight-card .h-desc { font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.5; }
@@ -433,8 +461,19 @@
     transition: border-color 0.2s;
   }
 
-  .insight-item:hover { border-color: rgba(201,111,255,0.3); }
-  .insight-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .insight-item:hover { border-color: rgba(0,195,255,0.3); }
+
+  /* ÍCONES DOS INSIGHTS */
+  .insight-icon { 
+    font-size: 22px; 
+    flex-shrink: 0; 
+    background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.3);
+    width: 46px; height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,229,255,0.15);
+  }
 
   .insight-content .i-title { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
   .insight-content .i-text { font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.6; }
@@ -445,7 +484,7 @@
   /* ---- Scrollbar ---- */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: rgba(201,111,255,0.3); border-radius: 100px; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,195,255,0.3); border-radius: 100px; }
 
   @media (max-width: 900px) {
     header, nav, main { padding-left: 20px; padding-right: 20px; }
@@ -517,7 +556,7 @@
       <div class="icon">🗣️</div>
       <div class="label">Média de Comentários</div>
       <div class="value">651,17</div>
-      <div class="sub">Por post (excluindo zeros)</div>
+      <div class="sub">Por post</div>
     </div>
   </div>
 
@@ -543,7 +582,7 @@
       <div class="icon">📈</div>
       <div class="label">Média de Views</div>
       <div class="value">99.112,57</div>
-      <div class="sub">Por vídeo (excl. zeros)</div>
+      <div class="sub">Por vídeo</div>
     </div>
     <div class="card metric-card">
       <div class="icon">▶️</div>
@@ -555,7 +594,7 @@
       <div class="icon">🔁</div>
       <div class="label">Média de Plays</div>
       <div class="value">568.070,00</div>
-      <div class="sub">Por vídeo (excl. zeros)</div>
+      <div class="sub">Por vídeo</div>
     </div>
   </div>
 
@@ -825,25 +864,24 @@ Chart.defaults.color = '#7e7ea0';
 Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
 Chart.defaults.font.family = "'Inter', sans-serif";
 
-const accent = '#c96fff', accent2 = '#ff6fd8', accent3 = '#6fdfff', accent4 = '#ffd86f';
-const pos = '#5fffa8', neg = '#ff6b6b', neu = '#ffd86f';
-
-// Monthly chart
+const accent = '#00c3ff', accent2 = '#00e5ff', accent3 = '#00ff9d', accent4 = '#5fffa8', pos = '#5fffa8', neg = '#ff6b6b', neu = '#ffd86f';
+// Monthly chart (MODIFIED TO LINE CHART)
 new Chart(document.getElementById('monthlyChart'), {
-  type: 'bar',
+  type: 'line',
   data: {
     labels: ['Fev/22','Set/22','Nov/22','Ago/23','Nov/24','Jun/25','Ago/25','Set/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26'],
     datasets: [{
       label: 'Posts',
       data: [1,1,1,1,1,1,2,2,2,1,3,1,1],
-      backgroundColor: ctx => {
-        const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
-        g.addColorStop(0, 'rgba(201,111,255,0.8)');
-        g.addColorStop(1, 'rgba(111,223,255,0.3)');
-        return g;
-      },
-      borderRadius: 8,
-      borderSkipped: false,
+      borderColor: accent,
+      backgroundColor: 'rgba(0,195,255,0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: accent,
+      pointBorderColor: '#fff',
+      pointRadius: 4,
+      pointHoverRadius: 6
     }]
   },
   options: {
@@ -882,10 +920,12 @@ new Chart(document.getElementById('viewsByTypeChart'), {
 new Chart(document.getElementById('videoViewsChart'), {
   type: 'bar',
   data: {
-    labels: ['feat?','Parte 3','Album','Decifrar','Nós Dois','Lembranças','Show'],
+    //labels: ['18/08/2025','01/04/2026','28/01/2026','11/03/2026','23/09/2025','17/06/2025','03/02/2026'],
+	   //data: [205116,      87189,        11876,       15587,       254938,      107073,     12009],
+	labels: ['17/06/2025','18/08/2025','23/09/2025','28/01/2026','03/02/2026','11/03/2026','01/04/2026'],
     datasets: [{
       label: 'Views',
-      data: [205116, 87189, 11876, 15587, 254938, 107073, 12009],
+      data: [107073, 205116, 254938, 11876, 12009, 15587, 87189],
       backgroundColor: [accent3, accent3, accent3, accent3, accent, accent2, accent3].map(c => c + 'bb'),
       borderRadius: 6,
       borderSkipped: false,
@@ -1015,12 +1055,12 @@ top10.forEach((r, i) => {
 
 // Positive words
 const posWords = [
-  {w:'amo',c:333},{w:'linda',c:239},{w:'gostosa',c:208},{w:'sou',c:153},{w:'maravilhosa',c:147},
-  {w:'perfeita',c:140},{w:'mulher',c:129},{w:'demais',c:112},{w:'amor',c:111},{w:'gata',c:97}
+  {w:'amo',c:333},{w:'linda',c:237},{w:'gostosa',c:206},{w:'maravilhosa',c:146},{w:'perfeita',c:140},
+  {w:'demais',c:112},{w:'amor',c:111},{w:'gata',c:97},{w:'vida',c:93},{w:'braba',c:67}
 ];
 const negWords = [
-  {w:'pqp',c:22},{w:'sem',c:12},{w:'mulher',c:9},{w:'mal',c:8},{w:'aff',c:7},
-  {w:'vida',c:6},{w:'nunca',c:5},{w:'afff',c:5},{w:'porra',c:5},{w:'amor',c:5}
+  {w:'pqp',c:22},{w:'aff',c:12},{w:'mal',c:8},,{w:'porra',c:5},
+  {w:'condições',c:5},{w:'respirei',c:5},{w:'feia',c:4},{w:'ajuda',c:4},{w:'cidade',c:4},{w:'via',c:4}
 ];
 
 function renderWords(data, elId, cls) {
