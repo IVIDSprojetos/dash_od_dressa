@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Youtube Analytics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a26;
+    --card: #16161f;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00c3ff;   /* Azul vibrante */
+    --accent2: #00e5ff;  /* Ciano / Teal */
+    --accent3: #00ff9d;  /* Verde neon */
+    --accent4: #5fffa8;  /* Verde claro */
+    --text: #f0eeff;
+    --muted: #7e7ea0;
+    --pos: #5fffa8;      /* Verde para positivos */
+    --neg: #ff6b6b;      /* Vermelho para negativos */
+    --neu: #ffd86f;      /* Amarelo para neutros */
+    --gradient: linear-gradient(135deg, #00c3ff 0%, #00e5ff 50%, #00ff9d 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    padding: 48px 40px 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(0,195,255,0.06) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo-area h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(28px, 4vw, 46px);
+    font-weight: 800;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .logo-area p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .header-badge {
+    background: rgba(0,195,255,0.12);
+    border: 1px solid rgba(0,195,255,0.3);
+    border-radius: 100px;
+    padding: 8px 18px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* ---- NAV TABS ---- */
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 20px 40px 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+    letter-spacing: 0.3px;
+  }
+
+  nav button.active {
+    color: var(--text);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--card);
+    margin-bottom: -1px;
+  }
+
+  nav button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 12px; right: 12px;
+    height: 2px;
+    background: var(--gradient);
+    border-radius: 2px;
+  }
+
+  nav button:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.04); }
+
+  /* ---- MAIN ---- */
+  main { padding: 36px 40px 60px; max-width: 1400px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---- SECTION TITLE ---- */
+  .section-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::before {
+    content: '';
+    width: 24px; height: 2px;
+    background: var(--gradient);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ---- GRID ---- */
+  .grid { display: grid; gap: 16px; }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+
+  /* ---- CARD ---- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover { border-color: rgba(0,195,255,0.25); transform: translateY(-1px); }
+
+  /* ---- METRIC CARD ---- */
+  .metric-card .label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .metric-card .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(22px, 3vw, 36px);
+    font-weight: 800;
+    line-height: 1;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .metric-card .sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .metric-card .icon {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 24px;
+    background: rgba(0,195,255,0.1);
+    border: 1px solid rgba(0,195,255,0.3);
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 14px;
+  }
+
+  /* ---- CHART CARD ---- */
+  .chart-card .card-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .chart-container { position: relative; }
+
+  /* ---- TABLES ---- */
+  .custom-table { width: 100%; border-collapse: collapse; }
+  .custom-table thead tr { border-bottom: 1px solid var(--border); }
+  .custom-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 0 12px 12px; text-align: left; }
+  .custom-table th:not(:first-child) { text-align: right; }
+  .custom-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .custom-table td { padding: 12px; font-size: 13px; color: var(--text); vertical-align: middle; }
+  .custom-table td:not(:first-child) { text-align: right; }
+
+  .rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 6px;
+    font-size: 11px; font-weight: 800; font-family: 'JetBrains Mono', monospace;
+    margin-right: 8px;
+  }
+  .rank-badge.gold { background: rgba(255,216,111,0.15); color: var(--neu); border: 1px solid rgba(255,216,111,0.3); }
+  .rank-badge.silver { background: rgba(180,180,200,0.12); color: #b4b4c8; border: 1px solid rgba(180,180,200,0.2); }
+  .rank-badge.bronze { background: rgba(255,150,80,0.12); color: #ff9650; border: 1px solid rgba(255,150,80,0.2); }
+  .rank-badge.default { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+
+  .hashtag-pill {
+    background: rgba(0,195,255,0.1);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .engagement-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent4); }
+  .mb { margin-bottom: 32px; }
+
+  .tweet-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 18px;
+    transition: transform 0.2s;
+    display: inline-block;
+  }
+  .tweet-link:hover { transform: scale(1.2); }
+
+  @media (max-width: 900px) {
+    .g4, .g2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <h1>Youtube Analytics</h1>
+    <p>Análise de vídeos da cantora Dressa · Dados atualizados</p>
+  </div>
+  <div class="header-badge">📊 Dashboard Interativo</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('geral')">📈 Métricas Gerais</button>
+  <button onclick="showTab('top10')">🏆 Top 10 Vídeos</button>
+  <button onclick="showTab('hashtags')">#️⃣ Top Hashtags</button>
+</nav>
+
+<main>
+  <div id="tab-geral" class="tab-panel active">
+    <p class="section-title">Métricas Gerais de Performance</p>
+    <div class="grid g4 mb">
+      <div class="card metric-card">
+        <div class="icon">🎬</div>
+        <div class="label">Total de Vídeos</div>
+        <div class="value">23</div>
+        <div class="sub">Vídeos analisados</div>
+      </div>
+      <div class="card metric-card">
+        <div class="icon">👁️</div>
+        <div class="label">Total de Views</div>
+        <div class="value">545.546</div>
+        <div class="sub">Média de 23.719,39 views por vídeo</div>
+      </div>
+      <div class="card metric-card">
+        <div class="icon">❤️</div>
+        <div class="label">Total de Likes</div>
+        <div class="value">3.614</div>
+        <div class="sub">Média de 157,13 likes por vídeo</div>
+      </div>
+      <div class="card metric-card">
+        <div class="icon">💬</div>
+        <div class="label">Total de Comentários</div>
+        <div class="value">724</div>
+        <div class="sub">Média de 31,48 comentários por vídeo</div>
+      </div>
+    </div>
+    
+    <p class="section-title">Análise Temporal</p>
+    <div class="grid g2 mb">
+      <div class="card chart-card">
+        <div class="card-title"><span>👁️</span> Distribuição Temporal de Views</div>
+        <div class="chart-container" style="height:300px">
+          <canvas id="viewsChart"></canvas>
+        </div>
+      </div>
+      <div class="card chart-card">
+        <div class="card-title"><span>📅</span> Distribuição Temporal de Publicações</div>
+        <div class="chart-container" style="height:300px">
+          <canvas id="postsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-top10" class="tab-panel">
+    <p class="section-title">Top 10 Vídeos por Engajamento Total</p>
+    <div class="card" style="padding:0;overflow:auto;">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th style="padding-left:24px;">Vídeo</th>
+            <th>Visualizações</th>
+            <th>Curtidas</th>
+            <th>Comentários</th>
+            <th>Engajamento</th>
+            <th style="padding-right:24px; text-align: center;">Link</th>
+          </tr>
+        </thead>
+        <tbody id="top10-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab-hashtags" class="tab-panel">
+    <p class="section-title">Análise de Hashtags</p>
+    <div class="grid g2">
+      <div class="card" style="padding:0;overflow:auto;">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th style="padding-left:24px;">Hashtag</th>
+              <th style="padding-right:24px;">Frequência</th>
+            </tr>
+          </thead>
+          <tbody id="hashtags-body"></tbody>
+        </table>
+      </div>
+      <div class="card chart-card">
+        <div class="card-title"><span>📊</span> Uso de Hashtags</div>
+        <div class="chart-container" style="height:400px">
+          <canvas id="hashtagsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+Chart.defaults.color = '#7e7ea0';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+const accent = '#00c3ff';
+const accent2 = '#00ff9d';
+
+// Dados processados
+const labels = ["2025-06", "2025-07", "2025-08", "2025-10", "2025-12", "2026-01", "2026-04", "2026-05"];
+const dataViews = [2863, 460182, 559, 1047, 68592, 797, 473, 11033];
+const dataPosts = [1, 1, 1, 1, 16, 1, 1, 1];
+
+// Gráfico de Views
+new Chart(document.getElementById('viewsChart'), {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Views',
+      data: dataViews,
+      borderColor: accent,
+      backgroundColor: 'rgba(0,195,255,0.1)',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.3
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+});
+
+// Gráfico de Posts
+new Chart(document.getElementById('postsChart'), {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Vídeos',
+      data: dataPosts,
+      backgroundColor: 'rgba(0,255,157,0.2)',
+      borderColor: accent2,
+      borderWidth: 1
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { stepSize: 1 } } } }
+});
+
+// Top 10 Vídeos
+const top10 = [
+  {"cap": "DRESSA - Lembranças (Videoclipe)", "views": 460182, "likes": 1400, "comments": 328, "eng": 461910, "link": "https://www.youtube.com/watch?v=rGIrGCSdFvM"},
+  {"cap": "DRESSA - Roleta Ft. ZAM (Dance Video)", "views": 25511, "likes": 107, "comments": 10, "eng": 25628, "link": "https://www.youtube.com/watch?v=4G4f3USmgy0"},
+  {"cap": "DRESSA - Confissões Ft. Rodrigo do CN (Clipe Oficial)", "views": 11033, "likes": 157, "comments": 24, "eng": 11214, "link": "https://www.youtube.com/watch?v=JbtdlHaPArs"},
+  {"cap": "DRESSA - Roleta Ft. ZAM [Efeito Borboleta]", "views": 8844, "likes": 225, "comments": 175, "eng": 9244, "link": "https://www.youtube.com/watch?v=DjAxDtbrHyU"},
+  {"cap": "DRESSA - Sensação de Poder Ft. Cynthia Luz, Azzy [Efeito Borboleta]", "views": 7972, "likes": 345, "comments": 53, "eng": 8370, "link": "https://www.youtube.com/watch?v=rNcD-pF8pgs"},
+  {"cap": "DRESSA - Noites & Noites Ft. MC Tuto [Efeito Borboleta]", "views": 4243, "likes": 141, "comments": 9, "eng": 4393, "link": "https://www.youtube.com/watch?v=4J3QKuWCKfY"},
+  {"cap": "DRESSA - Amor & Outras Drogas Ft. DU'L, MC GP [Efeito Borboleta]", "views": 3479, "likes": 177, "comments": 4, "eng": 3660, "link": "https://www.youtube.com/watch?v=V_YiHKaBPqo"},
+  {"cap": "DRESSA.", "views": 2863, "likes": 193, "comments": 32, "eng": 3088, "link": "https://www.youtube.com/watch?v=6aCj8nURgwM"},
+  {"cap": "DRESSA - Criminal Ft. C.Z, RalphTheKid [Efeito Borboleta]", "views": 2742, "likes": 84, "comments": 8, "eng": 2834, "link": "https://www.youtube.com/watch?v=dnOJdUVKYHA"},
+  {"cap": "DRESSA - Efeito Borboleta (Causa) [Efeito Borboleta]", "views": 2566, "likes": 127, "comments": 11, "eng": 2704, "link": "https://www.youtube.com/watch?v=O_6ILOy4tr4"}
+];
+
+const rankClass = i => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'default';
+const fmtInt = n => Math.round(n).toLocaleString('pt-BR');
+
+const tbody = document.getElementById('top10-body');
+top10.forEach((r, i) => {
+  tbody.innerHTML += `<tr>
+    <td style="padding-left:24px;"><span class="rank-badge ${rankClass(i)}">${i+1}</span>${r.cap}</td>
+    <td>${fmtInt(r.views)}</td><td>${fmtInt(r.likes)}</td><td>${fmtInt(r.comments)}</td>
+    <td><span class="engagement-val">${fmtInt(r.eng)}</span></td>
+    <td style="text-align:center;padding-right:24px;"><a href="${r.link}" target="_blank" class="tweet-link">🔗</a></td>
+  </tr>`;
+});
+
+// Hashtags
+const topHashtags = [
+  {"tag": "#musicas", "count": 21}, {"tag": "#funk", "count": 17}, {"tag": "#capital", "count": 8},
+  {"tag": "#bernardo", "count": 7}, {"tag": "#zam", "count": 2}, {"tag": "#roleta", "count": 2},
+  {"tag": "#murillo", "count": 1}, {"tag": "#becks", "count": 1}, {"tag": "#mctuto", "count": 1}, {"tag": "#mcgp", "count": 1}
+];
+
+const htBody = document.getElementById('hashtags-body');
+topHashtags.forEach(h => {
+  htBody.innerHTML += `<tr><td style="padding-left:24px;"><span class="hashtag-pill">${h.tag}</span></td><td style="padding-right:24px;">${h.count}</td></tr>`;
+});
+
+new Chart(document.getElementById('hashtagsChart'), {
+  type: 'doughnut',
+  data: {
+    labels: topHashtags.map(h => h.tag),
+    datasets: [{
+      data: topHashtags.map(h => h.count),
+      backgroundColor: ['#00c3ff', '#00ff9d', '#ffd86f', '#ff6b6b', '#a29bfe', '#fab1a0', '#00cec9', '#0984e3', '#6c5ce7', '#ffeaa7'],
+      borderWidth: 0
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+});
+</script>
+</body>
+</html>
