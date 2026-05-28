@@ -340,6 +340,7 @@
             <th>Visualizações</th>
             <th>Curtidas</th>
             <th>Comentários</th>
+            <th>Duração (seg)</th>
             <th>Engajamento</th>
             <th style="padding-right:24px; text-align: center;">Link</th>
           </tr>
@@ -379,7 +380,7 @@
 const labels = ["2021-03", "2021-06", "2021-11", "2022-01", "2022-10", "2022-11", "2023-01", "2023-03", "2023-04", "2023-09", "2023-11", "2024-01", "2024-02", "2024-03", "2024-07", "2024-09", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-06", "2025-07", "2025-08", "2025-09", "2025-11", "2025-12", "2026-03", "2026-05"];
 const dataViews = [954000, 2775700, 241700, 865700, 189800, 4555000, 145000, 870600, 304200, 2104600, 181800, 496400, 438500, 779000, 434100, 263000, 704000, 2195900, 269400, 206000, 1046400, 247300, 547100, 1155000, 1309000, 896600, 71300, 269600, 54562, 75100];
 const dataPosts = [1, 3, 1, 2, 1, 3, 1, 2, 2, 2, 1, 3, 2, 3, 1, 1, 1, 2, 1, 1, 2, 1, 2, 2, 2, 1, 2, 1, 4, 1];
-const top10Data = [{"cap": "gnt pq eu sou assim?", "views": 3600000, "likes": 262400, "comments": 1041, "eng": 281340, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7161095387980352773"}, {"cap": "tropa do lazer ja convocou tuas amiguinhas  #viral", "views": 1600000, "likes": 227100, "comments": 1607, "eng": 232725, "link": "https://www.tiktok.com/@andressinhaoriginal/video/6976388918153432325"}, {"cap": "e foi assim q grande parte de vcs me conheceram  #...", "views": 1800000, "likes": 173800, "comments": 695, "eng": 181077, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7447241902128188677"}, {"cap": "meu glow up de milh\u00f5es \u2728", "views": 1900000, "likes": 111700, "comments": 243, "eng": 117078, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7278433995271048453"}, {"cap": "ta ganhando dinheiro c essa porr4 mo? #fyp", "views": 663600, "likes": 80500, "comments": 206, "eng": 89025, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7207674140659109126"}, {"cap": "as menina de hj em dia.... #fyp #fy", "views": 704000, "likes": 84500, "comments": 229, "eng": 88351, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7439183897507695927"}, {"cap": "#fyp", "views": 966000, "likes": 65300, "comments": 203, "eng": 67359, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7538265799874628870"}, {"cap": "assim de sa\u00fade amem #viral", "views": 954000, "likes": 63400, "comments": 144, "eng": 64992, "link": "https://www.tiktok.com/@andressinhaoriginal/video/6944499869327412485"}, {"cap": "como dizia minha amiga beyonce, pretty hurts #fy", "views": 573400, "likes": 42600, "comments": 87, "eng": 43054, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7052865680609217797"}, {"cap": "amo esse audio #fy #viral", "views": 896600, "likes": 40900, "comments": 0, "eng": 42814, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7548651594691169542"}];
+const top10Data = [{"cap": "gnt pq eu sou assim?", "views": 3600000, "likes": 262400, "comments": 1041, "eng": 281340, "duration": 8, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7161095387980352773"}, {"cap": "tropa do lazer ja convocou tuas amiguinhas  #viral", "views": 1600000, "likes": 227100, "comments": 1607, "eng": 232725, "duration": 15, "link": "https://www.tiktok.com/@andressinhaoriginal/video/6976388918153432325"}, {"cap": "e foi assim q grande parte de vcs me conheceram  #...", "views": 1800000, "likes": 173800, "comments": 695, "eng": 181077, "duration": 30, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7447241902128188677"}, {"cap": "meu glow up de milh\u00f5es \u2728", "views": 1900000, "likes": 111700, "comments": 243, "eng": 117078, "duration": 21, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7278433995271048453"}, {"cap": "ta ganhando dinheiro c essa porr4 mo? #fyp", "views": 663600, "likes": 80500, "comments": 206, "eng": 89025, "duration": 5, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7207674140659109126"}, {"cap": "as menina de hj em dia.... #fyp #fy", "views": 704000, "likes": 84500, "comments": 229, "eng": 88351, "duration": 18, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7439183897507695927"}, {"cap": "#fyp", "views": 966000, "likes": 65300, "comments": 203, "eng": 67359, "duration": 12, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7538265799874628870"}, {"cap": "assim de sa\u00fade amem #viral", "views": 954000, "likes": 63400, "comments": 144, "eng": 64992, "duration": 8, "link": "https://www.tiktok.com/@andressinhaoriginal/video/6944499869327412485"}, {"cap": "como dizia minha amiga beyonce, pretty hurts #fy", "views": 573400, "likes": 42600, "comments": 87, "eng": 43054, "duration": 31, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7052865680609217797"}, {"cap": "amo esse audio #fy #viral", "views": 896600, "likes": 40900, "comments": 0, "eng": 42814, "duration": 7, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7548651594691169542"}];
 const hashtagsData = [{"name": "fyp", "count": 24, "percent": 46.15}, {"name": "fy", "count": 17, "percent": 32.69}, {"name": "viral", "count": 9, "percent": 17.31}, {"name": "mchariel", "count": 2, "percent": 3.85}, {"name": "dressa", "count": 2, "percent": 3.85}, {"name": "justinbieber", "count": 1, "percent": 1.92}, {"name": "mcph", "count": 1, "percent": 1.92}, {"name": "mcmarks", "count": 1, "percent": 1.92}, {"name": "eooddn", "count": 1, "percent": 1.92}, {"name": "vaiprofycaramba", "count": 1, "percent": 1.92}];
 
 // Paleta de cores pastéis
@@ -443,16 +444,19 @@ function renderTop10() {
   body.innerHTML = top10Data.map((v, i) => {
     let badge = 'default';
     if(i===0) badge='gold'; else if(i===1) badge='silver'; else if(i===2) badge='bronze';
+    
     return `
       <tr>
         <td style="padding-left:24px;"><span class="rank-badge ${badge}">${i+1}</span> ${v.cap}</td>
         <td>${v.views.toLocaleString('pt-BR')}</td>
         <td>${v.likes.toLocaleString('pt-BR')}</td>
         <td>${v.comments.toLocaleString('pt-BR')}</td>
+        <td>${v.duration}s</td>
         <td class="engagement-val">${v.eng.toLocaleString('pt-BR')}</td>
         <td style="padding-right:24px; text-align: center;"><a href="${v.link}" target="_blank" class="tweet-link">🔗</a></td>
       </tr>
     `;
+
   }).join('');
 }
 
