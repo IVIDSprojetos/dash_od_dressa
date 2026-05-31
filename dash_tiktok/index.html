@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TikTok Analytics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a26;
+    --card: #16161f;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00c3ff;   /* Azul vibrante */
+    --accent2: #00e5ff;  /* Ciano / Teal */
+    --accent3: #00ff9d;  /* Verde neon */
+    --accent4: #5fffa8;  /* Verde claro */
+    --text: #f0eeff;
+    --muted: #7e7ea0;
+    --pos: #5fffa8;      /* Verde para positivos */
+    --neg: #ff6b6b;      /* Vermelho para negativos */
+    --neu: #ffd86f;      /* Amarelo para neutros */
+    --gradient: linear-gradient(135deg, #00c3ff 0%, #00e5ff 50%, #00ff9d 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    padding: 48px 40px 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(0,195,255,0.06) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo-area h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(28px, 4vw, 46px);
+    font-weight: 800;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .logo-area p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .header-badge {
+    background: rgba(0,195,255,0.12);
+    border: 1px solid rgba(0,195,255,0.3);
+    border-radius: 100px;
+    padding: 8px 18px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* ---- NAV TABS ---- */
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 20px 40px 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+    letter-spacing: 0.3px;
+  }
+
+  nav button.active {
+    color: var(--text);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--card);
+    margin-bottom: -1px;
+  }
+
+  nav button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 12px; right: 12px;
+    height: 2px;
+    background: var(--gradient);
+    border-radius: 2px;
+  }
+
+  nav button:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.04); }
+
+  /* ---- MAIN ---- */
+  main { padding: 36px 40px 60px; max-width: 1400px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---- SECTION TITLE ---- */
+  .section-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::before {
+    content: '';
+    width: 24px; height: 2px;
+    background: var(--gradient);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ---- GRID ---- */
+  .grid { display: grid; gap: 16px; }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+
+  /* ---- CARD ---- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover { border-color: rgba(0,195,255,0.25); transform: translateY(-1px); }
+
+  /* ---- METRIC CARD ---- */
+  .metric-card .label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .metric-card .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(22px, 3vw, 36px);
+    font-weight: 800;
+    line-height: 1;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .metric-card .sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .metric-card .icon {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 24px;
+    background: rgba(0,195,255,0.1);
+    border: 1px solid rgba(0,195,255,0.3);
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 14px;
+  }
+
+  /* ---- CHART CARD ---- */
+  .chart-card .card-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .chart-container { position: relative; }
+
+  /* ---- TABLES ---- */
+  .custom-table { width: 100%; border-collapse: collapse; }
+  .custom-table thead tr { border-bottom: 1px solid var(--border); }
+  .custom-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 0 12px 12px; text-align: left; }
+  .custom-table th:not(:first-child) { text-align: right; }
+  .custom-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .custom-table td { padding: 12px; font-size: 13px; color: var(--text); vertical-align: middle; }
+  .custom-table td:not(:first-child) { text-align: right; }
+
+  .rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 6px;
+    font-size: 11px; font-weight: 800; font-family: 'JetBrains Mono', monospace;
+    margin-right: 8px;
+  }
+  .rank-badge.gold { background: rgba(255,216,111,0.15); color: var(--neu); border: 1px solid rgba(255,216,111,0.3); }
+  .rank-badge.silver { background: rgba(180,180,200,0.12); color: #b4b4c8; border: 1px solid rgba(180,180,200,0.2); }
+  .rank-badge.bronze { background: rgba(255,150,80,0.12); color: #ff9650; border: 1px solid rgba(255,150,80,0.2); }
+  .rank-badge.default { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+
+  .hashtag-pill {
+    background: rgba(0,195,255,0.1);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .engagement-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #00ff9d !important; }
+  .mb { margin-bottom: 32px; }
+
+  .tweet-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 18px;
+    transition: transform 0.2s;
+    display: inline-block;
+  }
+  .tweet-link:hover { transform: scale(1.2); }
+
+  @media (max-width: 900px) {
+    .g4, .g2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <h1>TikTok Analytics</h1>
+    <p>Análise de vídeos da cantora Dressa · Dados atualizados</p>
+  </div>
+  <div class="header-badge">📊 Dashboard Interativo</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('geral')">📈 Métricas Gerais</button>
+  <button onclick="showTab('top10')">🏆 Top 10 Vídeos</button>
+  <button onclick="showTab('hashtags')">#️⃣ Top Hashtags</button>
+</nav>
+
+<main>
+  <div id="tab-geral" class="tab-panel active">
+    <p class="section-title">Métricas Gerais de Performance</p>
+    <div class="grid g4 mb">
+      <div class="card metric-card">
+        <div class="icon">🎬</div>
+        <div class="label">Total de Vídeos</div>
+        <div class="value">52</div>
+        <div class="sub">Vídeos analisados</div>
+      </div>
+      <div class="card metric-card">
+        <div class="icon">👁️</div>
+        <div class="label">Total de Views</div>
+        <div class="value">24.646.362</div>
+        <div class="sub">Média de 473.968,5 views por vídeo</div>
+      </div>
+      <div class="card metric-card">
+        <div class="icon">❤️</div>
+        <div class="label">Total de Likes</div>
+        <div class="value">1.551.398</div>
+        <div class="sub">Média de 29.834,58 likes por vídeo</div>
+      </div>
+      <div class="card metric-card">
+        <div class="icon">💬</div>
+        <div class="label">Total de Comentários</div>
+        <div class="value">8405</div>
+        <div class="sub">Média de 168 comentários por vídeo</div>
+      </div>
+    </div>
+    
+    <p class="section-title">Análise Temporal</p>
+    <div class="grid g2 mb">
+      <div class="card chart-card">
+        <div class="card-title"><span>👁️</span> Distribuição Temporal de Views</div>
+        <div class="chart-container" style="height:300px">
+          <canvas id="viewsChart"></canvas>
+        </div>
+      </div>
+      <div class="card chart-card">
+        <div class="card-title"><span>📅</span> Distribuição Temporal de Publicações</div>
+        <div class="chart-container" style="height:300px">
+          <canvas id="postsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-top10" class="tab-panel">
+    <p class="section-title">Top 10 Vídeos por Engajamento Total</p>
+    <div class="card" style="padding:0;overflow:auto;">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th style="padding-left:24px;">Vídeo</th>
+            <th>Visualizações</th>
+            <th>Curtidas</th>
+            <th>Comentários</th>
+            <th>Duração (seg)</th>
+            <th>Engajamento</th>
+            <th style="padding-right:24px; text-align: center;">Link</th>
+          </tr>
+        </thead>
+        <tbody id="top10-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab-hashtags" class="tab-panel">
+    <p class="section-title">Análise de Hashtags</p>
+    <div class="grid g2">
+      <div class="card" style="padding:0;overflow:auto;">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th style="padding-left:24px;">Hashtag</th>
+              <th style="padding-right:24px;">Frequência</th>
+            </tr>
+          </thead>
+          <tbody id="hashtags-body"></tbody>
+        </table>
+      </div>
+      <div class="card chart-card">
+        <div class="card-title"><span>📊</span> Uso de Hashtags por Vídeo</div>
+        <div class="chart-container" style="height:400px">
+          <canvas id="hashtagsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+<script>
+// Dados processados injetados
+const labels = ["2021-03", "2021-06", "2021-11", "2022-01", "2022-10", "2022-11", "2023-01", "2023-03", "2023-04", "2023-09", "2023-11", "2024-01", "2024-02", "2024-03", "2024-07", "2024-09", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-06", "2025-07", "2025-08", "2025-09", "2025-11", "2025-12", "2026-03", "2026-05"];
+const dataViews = [954000, 2775700, 241700, 865700, 189800, 4555000, 145000, 870600, 304200, 2104600, 181800, 496400, 438500, 779000, 434100, 263000, 704000, 2195900, 269400, 206000, 1046400, 247300, 547100, 1155000, 1309000, 896600, 71300, 269600, 54562, 75100];
+const dataPosts = [1, 3, 1, 2, 1, 3, 1, 2, 2, 2, 1, 3, 2, 3, 1, 1, 1, 2, 1, 1, 2, 1, 2, 2, 2, 1, 2, 1, 4, 1];
+const top10Data = [{"cap": "gnt pq eu sou assim?", "views": 3600000, "likes": 262400, "comments": 1041, "eng": 281340, "duration": 8, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7161095387980352773"}, {"cap": "tropa do lazer ja convocou tuas amiguinhas  #viral", "views": 1600000, "likes": 227100, "comments": 1607, "eng": 232725, "duration": 15, "link": "https://www.tiktok.com/@andressinhaoriginal/video/6976388918153432325"}, {"cap": "e foi assim q grande parte de vcs me conheceram  #...", "views": 1800000, "likes": 173800, "comments": 695, "eng": 181077, "duration": 30, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7447241902128188677"}, {"cap": "meu glow up de milh\u00f5es \u2728", "views": 1900000, "likes": 111700, "comments": 243, "eng": 117078, "duration": 21, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7278433995271048453"}, {"cap": "ta ganhando dinheiro c essa porr4 mo? #fyp", "views": 663600, "likes": 80500, "comments": 206, "eng": 89025, "duration": 5, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7207674140659109126"}, {"cap": "as menina de hj em dia.... #fyp #fy", "views": 704000, "likes": 84500, "comments": 229, "eng": 88351, "duration": 18, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7439183897507695927"}, {"cap": "#fyp", "views": 966000, "likes": 65300, "comments": 203, "eng": 67359, "duration": 12, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7538265799874628870"}, {"cap": "assim de sa\u00fade amem #viral", "views": 954000, "likes": 63400, "comments": 144, "eng": 64992, "duration": 8, "link": "https://www.tiktok.com/@andressinhaoriginal/video/6944499869327412485"}, {"cap": "como dizia minha amiga beyonce, pretty hurts #fy", "views": 573400, "likes": 42600, "comments": 87, "eng": 43054, "duration": 31, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7052865680609217797"}, {"cap": "amo esse audio #fy #viral", "views": 896600, "likes": 40900, "comments": 0, "eng": 42814, "duration": 7, "link": "https://www.tiktok.com/@andressinhaoriginal/video/7548651594691169542"}];
+const hashtagsData = [{"name": "fyp", "count": 24, "percent": 46.15}, {"name": "fy", "count": 17, "percent": 32.69}, {"name": "viral", "count": 9, "percent": 17.31}, {"name": "mchariel", "count": 2, "percent": 3.85}, {"name": "dressa", "count": 2, "percent": 3.85}, {"name": "justinbieber", "count": 1, "percent": 1.92}, {"name": "mcph", "count": 1, "percent": 1.92}, {"name": "mcmarks", "count": 1, "percent": 1.92}, {"name": "eooddn", "count": 1, "percent": 1.92}, {"name": "vaiprofycaramba", "count": 1, "percent": 1.92}];
+
+// Paleta de cores pastéis
+const pastelColors = [
+  '#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF',
+  '#E0BBE4', '#957DAD', '#D291BC', '#FEC8D8', '#FFDFD3'
+];
+
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+Chart.defaults.color = '#7e7ea0';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+const accent = '#00c3ff';
+const accent2 = '#00ff9d';
+
+// Gráfico de Views (Linha)
+new Chart(document.getElementById('viewsChart'), {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Views',
+      data: dataViews,
+      borderColor: accent,
+      backgroundColor: 'rgba(0,195,255,0.1)',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.3
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+});
+
+// Gráfico de Posts (Linha)
+new Chart(document.getElementById('postsChart'), {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Vídeos',
+      data: dataPosts,
+      borderColor: accent2,
+      backgroundColor: 'rgba(0,255,157,0.1)',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.3
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { stepSize: 1 } } } }
+});
+
+function renderTop10() {
+  const body = document.getElementById('top10-body');
+  body.innerHTML = top10Data.map((v, i) => {
+    let badge = 'default';
+    if(i===0) badge='gold'; else if(i===1) badge='silver'; else if(i===2) badge='bronze';
+    
+    return `
+      <tr>
+        <td style="padding-left:24px;"><span class="rank-badge ${badge}">${i+1}</span> ${v.cap}</td>
+        <td>${v.views.toLocaleString('pt-BR')}</td>
+        <td>${v.likes.toLocaleString('pt-BR')}</td>
+        <td>${v.comments.toLocaleString('pt-BR')}</td>
+        <td>${v.duration}s</td>
+        <td class="engagement-val">${v.eng.toLocaleString('pt-BR')}</td>
+        <td style="padding-right:24px; text-align: center;"><a href="${v.link}" target="_blank" class="tweet-link">🔗</a></td>
+      </tr>
+    `;
+
+  }).join('');
+}
+
+function renderHashtags() {
+  const body = document.getElementById('hashtags-body');
+  body.innerHTML = hashtagsData.map(h => `
+    <tr>
+      <td style="padding-left:24px;"><span class="hashtag-pill">#${h.name}</span></td>
+      <td style="padding-right:24px;">${h.count} vídeos (${h.percent.toFixed(1)}%)</td>
+    </tr>
+  `).join('');
+  
+  new Chart(document.getElementById('hashtagsChart'), {
+    type: 'doughnut',
+    data: {
+      labels: hashtagsData.map(h => h.name),
+      datasets: [{
+        data: hashtagsData.map(h => h.count),
+        backgroundColor: pastelColors,
+        borderWidth: 0
+      }]
+    },
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false, 
+      plugins: { 
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const percent = hashtagsData.find(h => h.name === label).percent;
+              return label + ': ' + value + ' vídeos (' + percent.toFixed(1) + '%)';
+            }
+          }
+        }
+      } 
+    }
+  });
+}
+
+renderTop10();
+renderHashtags();
+</script>
+
+</body>
+</html>
